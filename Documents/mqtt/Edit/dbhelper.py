@@ -1,7 +1,6 @@
-
-import mysql.connector
-import numpy as np
 import pandas as pd
+import mysql.connector
+
 
 import dbconfig
 
@@ -62,32 +61,23 @@ class DBHelper:
 
     def buildStatusDFFromDB(self, num=None):
         conn = self.connect()
-        cursor = conn.cursor(buffered=True)
+        cursor = conn.cursor()
         
-        try:
-            #query = "select temp_time, temp_data from cputemp_table "
-            query = """
-            SELECT sub.id, sub.temp_time, sub.temp_data FROM (
-                SELECT id, temp_time, temp_data FROM cputemp_table ORDER BY id DESC LIMIT %s
-            ) sub ORDER BY sub.id ASC
-            """
-            cursor.execute(query, (num,))
-        except Exception as e:
-            print("DB Error at buildStatusDFFromDB", e)
-        finally:
-            conn.close()
         
         df_data = {'time':[], 'Temp':[], 'CPU':[], 'Mem':[]}
+        query = "select temp_time, temp_data from cputemp_table "
+        cursor.execute(query)
         for row in cursor:
-            df_data['time'].append(row[1].strftime("%M:%S"))
-            stat = row[2].split(",")
-            
-            df_data['Temp'].append(float(stat[0]))
-            df_data['CPU'].append(float(stat[1]))
-            df_data['Mem'].append(float(stat[3]))
+            item = row[1].split(',')
+            df_data['time'].append(row[0].strftime("%M:%S"))
+            df_data['Temp'].append(float(item[0]))
+            df_data['CPU'].append(float(item[1])) 
+            df_data['Mem'].append(float(item[3])) 
         
         statdf = pd.DataFrame(data=df_data)
         statdf = statdf.set_index('time')
+        if num is None:
+            return statdf
         statdf = statdf.tail(num)
         return statdf
         

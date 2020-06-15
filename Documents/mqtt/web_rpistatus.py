@@ -43,7 +43,7 @@ def statusplot(num):
     num = int(num)
     #print ("<num={}>".format(num))
             
-    drawDF = DB.buildStatusDFFromDB(num)
+    drawDF = DB.buildStatusDFFromDB(20)
     #print(drawDF)
     
     y1 = drawDF['Temp']
